@@ -10,9 +10,10 @@ Currently, only UNIX based operating systems are supported. Moreover, you need t
 * hdf5
 * netcdf
 * python
+* python: netCDF4
 
 ## Getting started
-You can build pds-solvers-cuda as follows
+You can build pde-solvers-cuda as follows
 
 ```
 git clone https://github.com/LouisHurschler/pde-solvers-cuda.git  
