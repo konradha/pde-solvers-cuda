@@ -89,3 +89,13 @@ target_link_libraries(unit_tests Zisa::core Zisa::memory gtest_main)
 
 add_subdirectory(src)
 add_subdirectory(test)
+
+# to run ctest, copy the contents into the build dir
+file(COPY ${CMAKE_SOURCE_DIR}/scripts DESTINATION ${CMAKE_BINARY_DIR}/_deps/zisacore-build)
+
+
+# somewhat too much copying but this should ensure that we can run "ctest"
+file(COPY ${CMAKE_SOURCE_DIR}/scripts DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/scripts ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR}/_deps/zisacore-build)
+file(COPY ${CMAKE_SOURCE_DIR}/scripts ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR}/_deps/zisamemory-build)
