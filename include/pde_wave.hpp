@@ -52,7 +52,7 @@ public:
     if (this->bc_ == BoundaryCondition::Neumann) {
       zisa::copy(this->bc_neumann_values_, this->bc_neumann_values_);
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
-      // do noching as long as data on boundary does not change
+      // do nothing as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
       periodic_bc<n_coupled, Scalar>(this->data_.view());
     }
@@ -70,7 +70,7 @@ public:
     if (this->bc_ == BoundaryCondition::Neumann) {
       zisa::copy(this->bc_neumann_values_, initial_derivative);
     } else if (this->bc_ == BoundaryCondition::Dirichlet) {
-      // do noching as long as data on boundary does not change
+      // do nothing as long as data on boundary does not change
     } else if (this->bc_ == BoundaryCondition::Periodic) {
       periodic_bc<n_coupled, Scalar>(this->data_.view());
     }
