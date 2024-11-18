@@ -10,9 +10,10 @@ Currently, only UNIX based operating systems are supported. Moreover, you need t
 * hdf5
 * netcdf
 * python
+* python: netCDF4
 
-## Getting startet
-You can build pds-solvers-cuda as follows
+## Getting started
+You can build pde-solvers-cuda as follows
 
 ```
 git clone https://github.com/LouisHurschler/pde-solvers-cuda.git  
@@ -23,7 +24,7 @@ cmake -B build -DENABLE_CUDA={ON, OFF}
 Note that `ENABLE_CUDA` is set `OFF` by default
 
 ## Running the application
-The easyest way to run the application is by following these steps:
+The easiest way to run the application is by following these steps:
 
 ### Create a NetCDF Input File
 Use the Python function in `scripts/create_netcdf_input.py` to create a NetCDF input file. 
