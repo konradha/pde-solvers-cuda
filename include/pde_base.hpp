@@ -20,31 +20,34 @@
 
 #define PROGRESS_BAR_WIDTH 100
 
-#define PRINT_PROGRESS(iteration, total) \
-    do { \
-        static int last_printed = -1; \
-        static clock_t last_update = 0; \
-        clock_t now = clock(); \
-        if (iteration == 0) { \
-            last_update = now; \
-        } \
-        int percentage = (iteration * 100) / total; \
-        if (percentage != last_printed && (now - last_update) > CLOCKS_PER_SEC / 10) { \
-            int filled_width = (PROGRESS_BAR_WIDTH * iteration) / total; \
-            printf("\r["); \
-            for (int i = 0; i < PROGRESS_BAR_WIDTH; ++i) { \
-                if (i < filled_width) printf("#"); \
-                else printf(" "); \
-            } \
-            printf("] %3d%%", percentage); \
-            fflush(stdout); \
-            last_printed = percentage; \
-            last_update = now; \
-        } \
-        if (iteration == total - 1) { \
-            printf("\n"); \
-        } \
-    } while (0)
+#define PRINT_PROGRESS(iteration, total)                                       \
+  do {                                                                         \
+    static int last_printed = -1;                                              \
+    static clock_t last_update = 0;                                            \
+    clock_t now = clock();                                                     \
+    if (iteration == 0) {                                                      \
+      last_update = now;                                                       \
+    }                                                                          \
+    int percentage = (iteration * 100) / total;                                \
+    if (percentage != last_printed &&                                          \
+        (now - last_update) > CLOCKS_PER_SEC / 10) {                           \
+      int filled_width = (PROGRESS_BAR_WIDTH * iteration) / total;             \
+      printf("\r[");                                                           \
+      for (int i = 0; i < PROGRESS_BAR_WIDTH; ++i) {                           \
+        if (i < filled_width)                                                  \
+          printf("#");                                                         \
+        else                                                                   \
+          printf(" ");                                                         \
+      }                                                                        \
+      printf("] %3d%%", percentage);                                           \
+      fflush(stdout);                                                          \
+      last_printed = percentage;                                               \
+      last_update = now;                                                       \
+    }                                                                          \
+    if (iteration == total - 1) {                                              \
+      printf("\n");                                                            \
+    }                                                                          \
+  } while (0)
 
 #define DURATION(a)                                                            \
   std::chrono::duration_cast<std::chrono::microseconds>(a).count()
@@ -124,7 +127,7 @@ public:
         // total_comp_time_count += DURATION(end - start);
         // tot_comp_count++;
       }
-      if (memory_location_ == zisa::device_type::cpu) 
+      if (memory_location_ == zisa::device_type::cpu)
         PRINT_PROGRESS(i, n_timesteps);
       time += dt;
     }

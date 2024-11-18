@@ -1,7 +1,6 @@
 #ifndef PDE_WAVE_HPP_
 #define PDE_WAVE_HPP_
 
-
 #include "io/netcdf_reader.hpp"
 #include "periodic_bc.hpp"
 #include "zisa/io/hdf5_writer.hpp"

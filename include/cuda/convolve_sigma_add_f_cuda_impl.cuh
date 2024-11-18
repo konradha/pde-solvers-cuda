@@ -29,21 +29,19 @@ convolve_sigma_add_f_cuda_kernel(zisa::array_view<Scalar, 2> dst,
       result_function);
     for (int i = 0; i < n_coupled; i++) {
       dst(x_idx, n_coupled * y_idx + i) =
-          del_x_2
-             * (sigma(2 * x_idx - 2, y_idx)
-                 * (src(x_idx - 1, y_idx * n_coupled + i) 
-                  - src(x_idx, y_idx * n_coupled + i))
-              + sigma(2 * x_idx, y_idx) 
-                 * (src(x_idx + 1, y_idx * n_coupled + i) 
-                  - src(x_idx, y_idx * n_coupled + i)))
-       + del_y_2 
-           * (sigma(2 * x_idx - 1, y_idx - 1)
-                 * (src(x_idx, y_idx * n_coupled + i - n_coupled)
-                  - src(x_idx, y_idx * n_coupled + i))
-            + sigma(2 * x_idx - 1, y_idx + 1)
-                 * (src(x_idx, y_idx * n_coupled + i + n_coupled)
-                  - src(x_idx, y_idx * n_coupled + i)))
-          + result_function[i];
+          del_x_2 * (sigma(2 * x_idx - 2, y_idx) *
+                         (src(x_idx - 1, y_idx * n_coupled + i) -
+                          src(x_idx, y_idx * n_coupled + i)) +
+                     sigma(2 * x_idx, y_idx) *
+                         (src(x_idx + 1, y_idx * n_coupled + i) -
+                          src(x_idx, y_idx * n_coupled + i))) +
+          del_y_2 * (sigma(2 * x_idx - 1, y_idx - 1) *
+                         (src(x_idx, y_idx * n_coupled + i - n_coupled) -
+                          src(x_idx, y_idx * n_coupled + i)) +
+                     sigma(2 * x_idx - 1, y_idx + 1) *
+                         (src(x_idx, y_idx * n_coupled + i + n_coupled) -
+                          src(x_idx, y_idx * n_coupled + i))) +
+          result_function[i];
     }
   }
 }

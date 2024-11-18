@@ -46,11 +46,11 @@ __global__ void periodic_bc_cuda_kernel(zisa::array_view<Scalar, 2> data,
       const int loc_idx = idx - (y_length + (x_length - 2) * 2 * n_coupled);
       if (loc_idx < n_coupled) {
         // lower left corner
-        data(x_length - 1, loc_idx) = data(1, y_length - 2 * n_coupled + loc_idx);
+        data(x_length - 1, loc_idx) =
+            data(1, y_length - 2 * n_coupled + loc_idx);
       } else if (loc_idx >= y_length - n_coupled) {
         // lower right corner
-        data(x_length - 1, loc_idx) =
-            data(1, loc_idx+ n_coupled - y_length);
+        data(x_length - 1, loc_idx) = data(1, loc_idx + n_coupled - y_length);
       } else {
         data(x_length - 1, loc_idx) = data(1, loc_idx);
       }
