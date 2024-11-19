@@ -74,7 +74,7 @@ inline void print_matrix(const zisa::array_const_view<Scalar, 2> &array) {
 #endif // CUDA_AVAILABLE
 }
 
-// make shure that the dimensions of the data to read and the preallocated
+// make sure that the dimensions of the data to read and the preallocated
 // data array match
 template <typename Scalar>
 inline void read_data(zisa::HierarchicalReader &reader,
