@@ -5,6 +5,7 @@
 #include <helpers.hpp>
 #include <neumann_bc.hpp>
 #include <periodic_bc.hpp>
+#include <sg_special_bc.hpp>
 #include <string>
 #include <zisa/io/file_manipulation.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
@@ -53,17 +54,23 @@
   std::chrono::duration_cast<std::chrono::microseconds>(a).count()
 #define NOW std::chrono::high_resolution_clock::now()
 
-enum BoundaryCondition { Dirichlet, Neumann, Periodic };
+enum BoundaryCondition { Dirichlet, Neumann, Periodic, SpecialSG };
+// SGSpecial is:
+// u_x(x, y, t) = -4 exp(x + y + t) / (1 + exp(2x + 2y)) for x = L and x = -L
+// u_y(x, y, t) = -4 exp(x + y + t) / (1 + exp(2x + 2y)) for y = L and y = -L
 
 template <int n_coupled, typename Scalar> class PDEBase {
 public:
   // note here that Nx and Ny denote the size INSIDE the boundary WITHOUT the
-  // boundary so that the total size is Nx + 2 * Ny + 2
+  // boundary so that the total size is (Nx + 2) * (Ny + 2)
   // if n_coupled > 1, the coupled values are saved next to each other in data_
   // and bc_neumann_values_, for example for n_coupled = 3, data_ = u(0, 0),
   // v(0, 0), w(0, 0), u(0, 1), v(0, 1)...
   //         u(1, 0), v(1, 0), w(1, 0), u(1, 1), v(1, 1)...
   // note that sigma_values is independent of n_coupled
+
+  // TODO(konradha) check if we can optimize data layout here
+  // to get faster cache mechanics
   PDEBase(unsigned Nx, unsigned Ny, const zisa::device_type memory_location,
           BoundaryCondition bc, Scalar dx, Scalar dy)
       : data_(zisa::shape_t<2>(Nx + 2, n_coupled * (Ny + 2)), memory_location),
@@ -105,27 +112,13 @@ public:
     for (unsigned int i = 0; i < n_timesteps; ++i) {
       if (time + dt >= dsnapshots * snapshot_counter) {
         Scalar dt_new = dsnapshots * snapshot_counter - time;
-        // std::cout << "dt_new: " <<   dt_new << std::endl;
-        // auto start = NOW;
         apply(dt_new);
-        // auto end = NOW;
-        // total_comp_time_count += DURATION(end - start);
-        // tot_comp_count++;
 
         writer.save_snapshot(n_member, snapshot_counter, data_.const_view());
-        // std::cout << "dt - dt_new: " <<  dt - dt_new << std::endl;
-        // start = NOW;
         apply(dt - dt_new);
-        // end = NOW;
-        // total_comp_time_count += DURATION(end - start);
-        // tot_comp_count++;
         snapshot_counter++;
       } else {
-        // auto start = NOW;
         apply(dt);
-        // auto end = NOW;
-        // total_comp_time_count += DURATION(end - start);
-        // tot_comp_count++;
       }
       if (memory_location_ == zisa::device_type::cpu)
         PRINT_PROGRESS(i, n_timesteps);
@@ -180,7 +173,8 @@ protected:
   // apply boundary conditions
   // for cuda implementation, this should probably be done in the same step as
   // applying the convolution to avoid copying data back and forth
-  void add_bc(Scalar dt) {
+  void add_bc(Scalar dt, Scalar xL = 0., Scalar xR = 0., Scalar yT = 0.,
+              Scalar yB = 0., Scalar dx = 0., Scalar dy = 0., Scalar t = 0.) {
     if (bc_ == BoundaryCondition::Dirichlet) {
       // do nothing as long as data on boundary does not change
       // dirichlet_bc(data_.view(), bc_neumann_values_.const_view());
@@ -189,6 +183,10 @@ protected:
                                     bc_neumann_values_.const_view(), dt);
     } else if (bc_ == BoundaryCondition::Periodic) {
       periodic_bc<n_coupled, Scalar>(data_.view());
+    } else if (bc_ == BoundaryCondition::SpecialSG) {
+      Scalar t = 0.;
+      special_sg_bc<n_coupled, Scalar>(data_.view(), dt, xL, xR, yT, yB, dx, dy,
+                                       t);
     } else {
       std::cout << "boundary condition not implemented yet!" << std::endl;
     }

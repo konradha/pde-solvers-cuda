@@ -37,6 +37,7 @@ def sigma(member, x_position, y_position):
 
 def f(member, size):
     if member == 0:
+        import pdb; pdb.set_trace()
         # f_1(x, y, z) = 1 => x(t) = t^2/2, x'(0) = 0
         # f_2(x, y, z) = 2x + y = t^2 + y => y(t) = 1.5exp(t) + 0.5exp(-t) - t^2 - 2, y'(0) = 0
         # f_3(x, y, z) = 6x = 3t^2 => z(t) = t^4/4, z'(0) = 0

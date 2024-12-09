@@ -12,7 +12,7 @@ NetCDFFile {
         y_size -> int (number of nodes OF ONE PDE in y-direction WITHOUT boundary condition nodes)
         y_length -> Scalar (length of grid in y-direction)
 
-        boundary_value_type -> int (0=Dirichlet, 1=Neumann, 2=Periodic)
+        boundary_value_type -> int (0=Dirichlet, 1=Neumann, 2=Periodic, 3=sG-special)
         scalar_type -> int (0=float, 1=double)
 
         n_coupled -> int (#number coupled PDEs)
@@ -23,6 +23,9 @@ NetCDFFile {
         number_snapshots -> int (number snapshots to shoot, includes initial time values)
 
         file_to_save_output -> string (file to save output)
+
+        extra_source_term -> enum (0: -sin, 1: (.) + (.) ** 3) =: F
+        extra_source_eps  -> Scalar (ie. if function (d_t)^k (u) = (D_x)^l u + F(u)
     }
 
     Variables {
@@ -56,6 +59,8 @@ The data of sigma values is arranged in following way:
 '''
 import netCDF4 as nc
 import numpy as np
+
+from enum import Enum
     
 # function template for initial_values, bc_values and sigma_values
 # note that here the arguments are the member and the x and y-positions in the grid
@@ -74,14 +79,22 @@ def dummy_function_scalings(member, size):
     x_values = np.linspace(0, size-1, num=size)
     return member * x_values + 2
 
-    
+class SourceTerm(Enum):
+    sine_Gordon = 0
+    Klein_Gordon = 1
+ 
 # make shure that you input the right types, for example in final_time you have to input a float (1. and not 1)
 def create_input_file(filename, file_to_save_output, type_of_equation=0, 
                       x_size=8, x_length=1., y_size=8, y_length=1., boundary_value_type=1,
                       scalar_type=0, n_coupled=1, 
                       coupled_function_order=2, number_timesteps=1000,
                       final_time=1., number_snapshots=3, n_members=2, initial_value_function=dummy_function_2d,
-                      sigma_function=dummy_sigma_2d, bc_neumann_function=dummy_function_2d, f_value_function=dummy_function_scalings):
+                      sigma_function=dummy_sigma_2d, bc_neumann_function=dummy_function_2d,
+                      f_value_function=dummy_function_scalings,
+
+                      extra_source_term: SourceTerm = None,
+                      extra_source_eps: float = None,
+                      ):
 
     # Create a new NetCDF file
     with nc.Dataset(filename, 'w') as root:
@@ -100,6 +113,8 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
 
         root.n_coupled = n_coupled  # Number of coupled PDEs
         root.coupled_function_order = coupled_function_order  # Order of coupled function
+
+        print("n_coupled",n_coupled)
 
         root.number_timesteps = number_timesteps # number of timesteps of simulation
         root.final_time = final_time # final time after simulation
@@ -158,12 +173,14 @@ def create_input_file(filename, file_to_save_output, type_of_equation=0,
                 # If boundary_value_type is Neumann, define additional variable
                 if root.boundary_value_type == 1 or root.type_of_equation == 1:
                     bc_neumann_values[member, :, coupled_idx::n_coupled] = bc_neumann_function(member, coupled_idx, xx, yy)
-
+        if extra_source_term is not None and extra_source_eps is not None:
+            root.extra_source_term = extra_source_term
+            root.extra_source_eps = extra_source_eps
 
     print(f"NetCDF file '{filename}' created successfully.")
 
 if __name__ == "__main__":
-    # Usage example:
+    # Usage example (doc)
     create_input_file('data/example.nc', 'data/example_out.nc', type_of_equation=0, 
                       x_size=160, x_length=2., y_size=160, y_length=2., boundary_value_type=1,
                       scalar_type=0, n_coupled=2, 

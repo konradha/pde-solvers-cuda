@@ -79,6 +79,8 @@ void run_simulation(const NetCDFPDEReader &reader,
     bc = BoundaryCondition::Neumann;
   } else if (boundary_value == 2) {
     bc = BoundaryCondition::Periodic;
+  } else if (boundary_value == 3) {
+    bc = BoundaryCondition::SpecialSG;
   } else {
     std::cout << "boundary condition not in range! " << std::endl;
     exit(-1);
@@ -98,6 +100,7 @@ void run_simulation(const NetCDFPDEReader &reader,
       exit(-1);
     }
   } else if (pde_type == 1) {
+    std::cout << "GOT " << reader.get_n_coupled() << "\n";
     switch (reader.get_n_coupled()) {
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 1, memory_location)
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 2, memory_location)

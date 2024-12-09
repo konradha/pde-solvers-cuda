@@ -89,4 +89,18 @@ inline void read_data(zisa::HierarchicalReader &reader,
 #endif // CUDA_AVAILABLE
 }
 
+template <int n_coupled = 1, typename Scalar, typename Function>
+void apply_function(zisa::array_view<Scalar, 2> dst,
+                    zisa::array_const_view<Scalar, 2> src, Function &f) {
+#if CUDA_AVAILABLE
+  std::throw();
+#else
+  for (uint32_t i = 0; i < dst.shape(0) - 1; i++) {
+    for (uint32_t j = 0; j < dst.shape(1) - n_coupled; j += n_coupled) {
+      dst(i, j) = f(src(i, j));
+    }
+  }
+#endif
+}
+
 #endif // HELPERS_HPP_

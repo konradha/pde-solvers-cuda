@@ -45,6 +45,25 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
   }
 }
 
+// apply single function such as
+// sin(x), cos(x), x + x³, ...
+template <int n_coupled, typename Scalar, typename Function>
+void apply_function_cpu(zisa::array_view<Scalar, 2> dst,
+                        zisa::array_const_view<Scalar, 2> src,
+                        const Function &f) {
+  const auto [Nx, Ny] = src.shape;
+  for (uint32_t x = 0; x < Nx; ++x) {
+    for (uint32_t y = n_coupled; y < Ny - n_coupled; y += n_coupled) {
+      Scalar result_function[n_coupled];
+      f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu),
+        result_function);
+      for (uint32_t i = 0; i < n_coupled; i++) {
+        dst(x, y + i) = result_function[i];
+      }
+    }
+  }
+}
+
 // Function is a general function taking a Scalar returning a Scalar
 template <int n_coupled, typename Scalar, typename Function>
 void convolve_sigma_add_f(zisa::array_view<Scalar, 2> dst,
