@@ -107,7 +107,7 @@ void run_simulation(const NetCDFPDEReader &reader,
       exit(-1);
     }
   } else if (pde_type == 1) {
-    std::cout << "GOT " << reader.get_n_coupled() << "\n";
+    // std::cout << "GOT " << reader.get_n_coupled() << "\n";
     switch (reader.get_n_coupled()) {
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 1, memory_location)
       INSTANCIATE_PDE_AND_CALCULATE(PDEWave, 2, memory_location)

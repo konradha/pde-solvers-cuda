@@ -119,6 +119,8 @@ public:
         snapshot_counter++;
       } else {
         apply(dt);
+        // print();
+        // throw std::logic_error("Gracefully shutting down");
       }
       if (memory_location_ == zisa::device_type::cpu)
         PRINT_PROGRESS(i, n_timesteps);
@@ -184,7 +186,16 @@ protected:
     } else if (bc_ == BoundaryCondition::Periodic) {
       periodic_bc<n_coupled, Scalar>(data_.view());
     } else if (bc_ == BoundaryCondition::SpecialSG) {
-      Scalar t = 0.;
+#if DEBUG
+      std::cout << "applying special boundary condition\n";
+      std::cout << "xL: " << xL << "\n";
+      std::cout << "xR: " << xR << "\n";
+      std::cout << "yB: " << yB << "\n";
+      std::cout << "yT: " << yT << "\n";
+      std::cout << "dx: " << dx << "\n";
+      std::cout << "dy: " << dy << "\n";
+      std::cout << "t:  " << t << "\n";
+#endif
       special_sg_bc<n_coupled, Scalar>(data_.view(), dt, xL, xR, yT, yB, dx, dy,
                                        t);
     } else {

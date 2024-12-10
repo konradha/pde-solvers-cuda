@@ -31,20 +31,46 @@ public:
         second_deriv.view(), this->data_.const_view(),
         this->sigma_values_.const_view(), del_x_2, del_y_2, func_);
 
-    // update of derivative
-    add_arrays_interior<n_coupled>(this->bc_neumann_values_.view(),
-                                   second_deriv.const_view(), dt);
-
     if (this->bc_ != BoundaryCondition::SpecialSG) {
+      // update of derivative
+      add_arrays_interior<n_coupled>(this->bc_neumann_values_.view(),
+                                     second_deriv.const_view(), dt);
       // update of data
       add_arrays_interior<n_coupled>(this->data_.view(),
                                      this->bc_neumann_values_.const_view(), dt);
       PDEBase<n_coupled, Scalar>::add_bc(dt);
     } else {
-      // assuming really basic geometry: [0, xR] x [0, yT] -- might be changed
-      // in future work
+
       const auto Nx = this->data_.shape(0);
       const auto Ny = this->data_.shape(1);
+
+      auto src = this->data_;
+      auto dst = second_deriv;
+      for (int x = 1; x < Nx - 1; x++) {
+        for (int y = n_coupled; y < Ny - n_coupled; y += n_coupled) {
+          Scalar result_function[n_coupled];
+          for (uint k = 0; k < n_coupled; ++k)
+            result_function[k] = std::sin(this->data_(x, y));
+#pragma unroll
+          for (int i = 0; i < n_coupled; i++) {
+            dst(x, y + i) =
+                del_x_2 * (src(x - 1, y + i) - src(x, y + i) +
+                           (src(x + 1, y + i) - src(x, y + i))) +
+                del_y_2 * ((src(x, y + i - n_coupled) - src(x, y + i)) +
+                           (src(x, y + i + n_coupled) - src(x, y + i))) +
+                result_function[i];
+          }
+        }
+      }
+      zisa::copy(second_deriv, this->data_);
+
+      // // update of data
+      // add_arrays_interior<n_coupled>(this->data_.view(),
+      //                                this->bc_neumann_values_.const_view(),
+      //                                dt);
+      // assuming really basic geometry: [0, xR] x [0, yT] -- need change
+      // in future work -- TODO(konradha)
+
       Scalar xL = 0.;
       Scalar yB = 0.;
 
@@ -52,6 +78,8 @@ public:
       Scalar yT = this->dy_ * Ny;
       PDEBase<n_coupled, Scalar>::add_bc(dt, xL, xR, yT, yB, this->dx_,
                                          this->dy_, this->current_t_);
+
+      // std::cout << "at time step " << this->current_t_ << "\n";
     }
     this->current_t_ += dt;
   }
@@ -171,7 +199,8 @@ public:
 
 protected:
   Function func_;
-  Scalar current_t_ = 0.;
+  Scalar current_t_ =
+      0.; // needed for special boundary conditions for sine-Gordon equation
 };
 
 #endif // PDE_WAVE_HPP_

@@ -8,10 +8,14 @@ def analytical_soliton_solution(X, Y, t):
     return 4 * np.arctan(np.exp(X + Y - t))
 
 
-def plot_netcdf_surface(file_path, variable='data', n_coupled_index=0):
-    with nc.Dataset(file_path, 'r') as f: 
-        #print(f)
+def plot_netcdf_surface(file_path, variable='data', n_coupled_index=0):  
+    with nc.Dataset(file_path, 'r') as f:
         data = f.variables[variable][:]
+
+        print_data = np.array(data[0])
+        
+        with open('pde-solvers-analytical-soliton.npy', 'wb') as save_f:
+            np.save(save_f, print_data)
 
         xL, yL = f.x_length, f.y_length
         nx, ny = f.n_x, f.n_y
@@ -27,7 +31,10 @@ def plot_netcdf_surface(file_path, variable='data', n_coupled_index=0):
 
         fig = plt.figure(figsize=(20, 20))
         ax = fig.add_subplot(111, projection='3d')
-        surf = ax.plot_surface(X, Y, data[0, 0,][1:-1, 1:-1], cmap='viridis',)
+        surf = ax.plot_surface(X, Y,
+                data[0, 0,][1:-1, 1:-1],
+                #np.abs(data[0, 0,][1:-1, 1:-1] - data[0, -1,][1:-1, 1:-1]),
+                cmap='viridis',)
         plt.show()
         
 
@@ -66,17 +73,19 @@ def plot_netcdf_surface(file_path, variable='data', n_coupled_index=0):
                 if coupled_idx > 0:
                     ax.plot_surface(X, Y, (data[0, frame, :, coupled_idx::2][1:-1, 1:-1]), cmap='viridis')
                 else:
-                    #print("plotting this guy")
+                    #if frame > 1: print(np.sum(data[0,frame,][1:-1, 1:-1] - data[0, frame - 1,][1:-1, 1:-1]))
+                    
                     ax.plot_surface(X, Y,
-                            np.abs(data[0, frame,][1:-1, 1:-1] - analytical_soliton_solution(X, Y, frame * dt)),
-                            #(data[0, frame,][1:-1, 1:-1]),
+                            #np.abs(data[0, frame,][1:-1, 1:-1] - analytical_soliton_solution(X, Y, frame * dt)),
+                            (data[0, frame,][1:-1, 1:-1]),
                             cmap='viridis')
+                    ax.set_title(f"t={frame * dt:.2f}")
 
-            fps = 300
+            fps = 60
             ani = FuncAnimation(fig, update, frames=n_snapshots, interval=n_snapshots / fps, )
             plt.show()
 
-    return fig
+        return fig
 
 if __name__ == '__main__':
     fname = str(argv[1]) 

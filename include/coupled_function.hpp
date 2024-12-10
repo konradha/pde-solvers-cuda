@@ -13,6 +13,8 @@ y) = scaling_(0) + scaling(2) * x + scaling(4) * y + scaling(6) * x * y
 
 */
 
+#define DEBUG 0
+
 namespace specialized {
 enum FunctionType {
   // default -- may be extended to get Taylor approx for sin, sinh?
@@ -91,18 +93,20 @@ public:
   template <typename ARRAY>
   inline void operator()(zisa::array_const_view<Scalar, 1> x,
                          ARRAY result_values) const {
+    for (int i = 0; i < n_coupled_; i++) {
+      result_values[i] = 0;
+    }
+
     switch (func_type_) {
     case specialized::sin:
-      // This is definitely _not_ how the code works.
+#if DEBUG
+      std::cout << "SIN\n";
+#endif
       for (int k = 0; k < n_coupled_; k++) {
-        result_values[k] += std::sin(scalings_(k));
+        result_values[k] = std::sin(x(k));
       }
 
     default:
-      for (int i = 0; i < n_coupled_; i++) {
-        result_values[i] = 0;
-      }
-
       for (int i = 0; i < std::pow(max_pot_, n_coupled_); i++) {
         Scalar pot = 1.;
         int max_pot_pow_j = 1;

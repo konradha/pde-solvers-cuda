@@ -29,6 +29,7 @@ void convolve_sigma_add_f_cpu(zisa::array_view<Scalar, 2> dst,
       Scalar result_function[n_coupled];
       f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu),
         result_function);
+#pragma unroll
       for (int i = 0; i < n_coupled; i++) {
         dst(x, y + i) =
             del_x_2 * (sigma(2 * x - 2, y / n_coupled) *
@@ -57,6 +58,7 @@ void apply_function_cpu(zisa::array_view<Scalar, 2> dst,
       Scalar result_function[n_coupled];
       f(COUPLED_SLICE(n_coupled, src(x, y), zisa::device_type::cpu),
         result_function);
+#pragma unroll
       for (uint32_t i = 0; i < n_coupled; i++) {
         dst(x, y + i) = result_function[i];
       }
