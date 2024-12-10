@@ -6,6 +6,7 @@
 #include "zisa/io/hdf5_writer.hpp"
 #include <pde_base.hpp>
 
+#include <cmath>
 #include <stdexcept>
 
 template <int n_coupled, typename Scalar, typename Function>
@@ -34,12 +35,12 @@ public:
     add_arrays_interior<n_coupled>(this->bc_neumann_values_.view(),
                                    second_deriv.const_view(), dt);
 
-    // update of data
-    add_arrays_interior<n_coupled>(this->data_.view(),
-                                   this->bc_neumann_values_.const_view(), dt);
-    if (this->bc_ != BoundaryCondition::SpecialSG)
+    if (this->bc_ != BoundaryCondition::SpecialSG) {
+      // update of data
+      add_arrays_interior<n_coupled>(this->data_.view(),
+                                     this->bc_neumann_values_.const_view(), dt);
       PDEBase<n_coupled, Scalar>::add_bc(dt);
-    else {
+    } else {
       // assuming really basic geometry: [0, xR] x [0, yT] -- might be changed
       // in future work
       const auto Nx = this->data_.shape(0);
@@ -151,7 +152,8 @@ public:
       // do nothing, initial data is loaded
     }
 
-    std::cout << reader.get_extra_source_term() << "\n";
+    // std::cout << reader.get_extra_source_term() << "\n";
+    // std::cout << reader.get_extra_source_eps() << "\n";
 
     // update function scalings
     func_.update_values(reader.get_function<Scalar>(memb).const_view());

@@ -69,10 +69,17 @@ void run_simulation(const NetCDFPDEReader &reader,
                        (unsigned int)std::pow(coupled_order, n_coupled)),
       memory_location);
 
-  CoupledFunction<Scalar> func_coupled(function_scalings.const_view(),
-                                       n_coupled, coupled_order);
-  BoundaryCondition bc;
   int boundary_value = reader.get_boundary_value();
+  //  zisa::array_const_view<Scalar, 1> scalings, int n_coupled, int max_pot,
+  //     const specialized::FunctionType func_type = specialized::polynomial
+
+  auto ftype = (boundary_value == 3 ? specialized::FunctionType::sin
+                                    : specialized::FunctionType::polynomial);
+
+  CoupledFunction<Scalar> func_coupled(function_scalings.const_view(),
+                                       n_coupled, coupled_order, ftype);
+
+  BoundaryCondition bc;
   if (boundary_value == 0) {
     bc = BoundaryCondition::Dirichlet;
   } else if (boundary_value == 1) {

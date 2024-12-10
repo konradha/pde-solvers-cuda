@@ -24,7 +24,8 @@ enum FunctionType {
   exp,
   atan,
   tanh,
-  sinh
+  sinh,
+  KG // - (x + x^3)
 };
 } // namespace specialized
 

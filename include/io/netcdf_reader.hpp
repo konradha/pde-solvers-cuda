@@ -36,6 +36,7 @@ public:
     // ordering matters for this reader!
     check(
         nc_get_att(ncid_, NC_GLOBAL, "extra_source_term", &extra_source_term_));
+    check(nc_get_att(ncid_, NC_GLOBAL, "extra_source_eps", &extra_source_eps_));
 
     check(nc_get_att(ncid_, NC_GLOBAL, "n_coupled", &n_coupled_));
     check(nc_get_att(ncid_, NC_GLOBAL, "coupled_function_order",
@@ -87,6 +88,7 @@ public:
   int get_number_snapshots() const { return number_snapshots_; }
 
   int get_extra_source_term() const { return extra_source_term_; }
+  int get_extra_source_eps() const { return extra_source_eps_; }
 
   char *get_file_to_save_output() const { return file_to_save_output_; }
 
@@ -174,6 +176,7 @@ private:
   int scalar_type_;         // 0->float, 1->double
 
   int extra_source_term_;
+  double extra_source_eps_;
 
   int n_coupled_;
   int coupled_function_order_;
